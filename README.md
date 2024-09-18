@@ -4,7 +4,7 @@ Aplicação web simples que simula as regras de um jogo da velha convencional.
 
 ## Instalação e execução
 
-1. Clonar o repositório. `git clone https://github.com/isaque-dantas/estudos-react`
+1. Clonar o repositório. `git clone https://github.com/isaque-dantas/jogo-da-velha-react`
 2. Instalar as dependências. `npm install`
 3. Iniciar o servidor. `npm run start`
 
