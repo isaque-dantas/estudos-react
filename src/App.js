@@ -24,8 +24,6 @@ function App() {
     }
 
     function onPlayerWinning(winner) {
-        // console.log(game.players)
-        // console.log(winner)
         const winnerPlayer = game.players.filter((player) => {
             return player.symbol === winner
         })[0]
@@ -33,12 +31,12 @@ function App() {
         const newScore = winnerPlayer.score + 1
 
         setGame((prevState) => {
-            const players = game.players.map((player) => {
+            const players = prevState.players.map((player) => {
                 if (player.symbol === winner) player.score = newScore
                 return player
             })
 
-            return {...game, players: players}
+            return {...prevState, players: players}
         })
     }
 

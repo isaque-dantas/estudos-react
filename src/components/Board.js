@@ -3,7 +3,7 @@ import CellRow from "./CellRow";
 
 export default function Board({onPlayerInRoundChange, game, onPlayerWinning}) {
     const [board, setBoard] = useState(boardFactory)
-    const [cellRows, setCellRows] = useState(getCellRows(boardFactory()))
+    const [cellRows, setCellRows] = useState(() => getCellRows(boardFactory()))
 
     function boardFactory() {
         const boardSize = {x: 3, y: 3};
@@ -27,26 +27,31 @@ export default function Board({onPlayerInRoundChange, game, onPlayerWinning}) {
         const wasAlreadyClicked = clickedCell.content !== null
         if (wasAlreadyClicked) return;
 
-        board.cells = board.cells.map(cell => {
+        const newCells = board.cells.map(cell => {
             if (cell.x === clickedX && cell.y === clickedY) cell.content = board.currentPlayerInRound
             return cell
         })
 
-        let newCurrentPlayer = ''
         const symbols = game.players.map((player) => player.symbol)
+        const newCurrentPlayer = board.currentPlayerInRound === symbols[0] ? symbols[1] : symbols[0]
 
-        newCurrentPlayer = board.currentPlayerInRound === symbols[0] ? symbols[1] : symbols[0]
+        const updatedBoard = board
+        updatedBoard.cells = newCells
+        updatedBoard.currentPlayerInRound = newCurrentPlayer
 
         onPlayerInRoundChange(newCurrentPlayer)
-        board.currentPlayerInRound = newCurrentPlayer
 
-        checkForWinning()
+        const wasThereAnyWinner = checkForWinning(updatedBoard)
 
-        setBoard(board)
-        setCellRows(getCellRows(board))
+        if (wasThereAnyWinner) {
+            updatedBoard.cells = boardFactory().cells
+        }
+
+        setBoard(updatedBoard)
+        setCellRows(getCellRows(updatedBoard))
     }
 
-    function checkForWinning() {
+    function checkForWinning(board) {
         const possibleAxes = {
             columns: [],
             rows: [],
@@ -77,20 +82,13 @@ export default function Board({onPlayerInRoundChange, game, onPlayerWinning}) {
         if (results.some(result => result.isWinning)) {
             const winner = results.filter(result => result.isWinning)[0].player
             handleWinning(winner)
+            return true
         }
+
+        return false
     }
 
     function handleWinning(player) {
-        const newBoard = boardFactory()
-
-        setBoard(() => {
-            return {...board, cells: newBoard.cells}
-        })
-
-        setCellRows(() => {
-            return getCellRows(newBoard)
-        })
-
         onPlayerWinning(player)
     }
 
