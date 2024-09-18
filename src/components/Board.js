@@ -1,9 +1,9 @@
 import {useState} from "react";
 import CellRow from "./CellRow";
 
-export default function Board({onPlayerInRoundChange}) {
-    const [board, setBoard] = useState(boardFactory());
-    const [cellRows, setCellRows] = useState(getCellRows());
+export default function Board({onPlayerInRoundChange, game, onPlayerWinning}) {
+    const [board, setBoard] = useState(boardFactory)
+    const [cellRows, setCellRows] = useState(getCellRows(boardFactory()))
 
     function boardFactory() {
         const boardSize = {x: 3, y: 3};
@@ -24,34 +24,81 @@ export default function Board({onPlayerInRoundChange}) {
 
     function onCellClick(clickedX, clickedY) {
         const clickedCell = board.cells.filter(cell => cell.x === clickedX && cell.y === clickedY)[0]
-        const wasCellAlreadyClicked = clickedCell.content !== null
-
-        if (wasCellAlreadyClicked) {
-            console.log(`WAS CLICKED! x: ${clickedX}; y: ${clickedY}`);
-            return;
-        }
+        const wasAlreadyClicked = clickedCell.content !== null
+        if (wasAlreadyClicked) return;
 
         board.cells = board.cells.map(cell => {
-            if (cell.x === clickedX && cell.y === clickedY) {
-                cell.content = board.currentPlayerInRound
-            }
-
+            if (cell.x === clickedX && cell.y === clickedY) cell.content = board.currentPlayerInRound
             return cell
-        });
+        })
 
-        const switchPlayer = {'O': 'X', 'X': 'O'}
-        board.currentPlayerInRound = switchPlayer[board.currentPlayerInRound]
+        let newCurrentPlayer = ''
+        const symbols = game.players.map((player) => player.symbol)
 
-        onPlayerInRoundChange()
+        newCurrentPlayer = board.currentPlayerInRound === symbols[0] ? symbols[1] : symbols[0]
+
+        onPlayerInRoundChange(newCurrentPlayer)
+        board.currentPlayerInRound = newCurrentPlayer
+
+        checkForWinning()
 
         setBoard(board)
-        setCellRows(getCellRows())
+        setCellRows(getCellRows(board))
     }
 
-    function getCellRows() {
+    function checkForWinning() {
+        const possibleAxes = {
+            columns: [],
+            rows: [],
+            diagonals: [],
+        }
+
+        possibleAxes.diagonals = [
+            board.cells.filter(cell => cell.x === cell.y),
+            board.cells.filter(cell => cell.x + cell.y === board.size.x - 1),
+        ]
+
+        for (let i = 0; i < board.size.x; i++) {
+            possibleAxes.columns.push(board.cells.filter(cell => cell.x === i))
+            possibleAxes.rows.push(board.cells.filter(cell => cell.y === i))
+        }
+
+        let results = []
+        for (let axis in possibleAxes) {
+            results = (results.concat(possibleAxes[axis].map(cellsList => {
+                const firstCellContent = cellsList[0].content
+                return {
+                    player: firstCellContent,
+                    isWinning: cellsList.every(cell => cell.content === firstCellContent && firstCellContent !== null)
+                }
+            })))
+        }
+
+        if (results.some(result => result.isWinning)) {
+            const winner = results.filter(result => result.isWinning)[0].player
+            handleWinning(winner)
+        }
+    }
+
+    function handleWinning(player) {
+        const newBoard = boardFactory()
+
+        setBoard(() => {
+            return {...board, cells: newBoard.cells}
+        })
+
+        setCellRows(() => {
+            return getCellRows(newBoard)
+        })
+
+        onPlayerWinning(player)
+    }
+
+    function getCellRows(inputBoard) {
         const rows = []
-        for (let i = 0; i < board.size.y; i++) {
-            const cells = board.cells.filter((cell) => cell.y === i)
+
+        for (let i = 0; i < inputBoard.size.y; i++) {
+            const cells = inputBoard.cells.filter((cell) => cell.y === i)
             rows.push(<CellRow key={i} cells={cells} onCellClick={onCellClick}/>)
         }
 
