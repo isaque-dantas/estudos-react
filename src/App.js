@@ -1,6 +1,7 @@
 import './App.css';
 import Board from './components/Board'
 import {useState} from "react";
+import ScoreBoard from "./components/ScoreBoard";
 
 function App() {
     const [game, setGame] = useState(gameFactory())
@@ -40,31 +41,20 @@ function App() {
         })
     }
 
-    return (<div className="flex content-center gap-10 p-10">
-        <Board onPlayerInRoundChange={onPlayerInRoundChange} onPlayerWinning={onPlayerWinning} game={game}/>
-        <div className="flex flex-col gap-3">
-            <h1 className="text-4xl">TicTacToe!</h1>
-            <p>Jogador atual: {currentPlayer}</p>
-            <table className="mt-5">
-                <thead>
-                <tr>
-                    <th>Jogador</th>
-                    <th>Pontuação</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr className="text-center">
-                    <td>{game.players[0].symbol}</td>
-                    <td>{game.players[0].score}</td>
-                </tr>
-                <tr className="text-center">
-                    <td>{game.players[1].symbol}</td>
-                    <td>{game.players[1].score}</td>
-                </tr>
-                </tbody>
-            </table>
+    return (<>
+        <div className="fixed bottom-1/2 right-1/2 translate-x-1/2 translate-y-1/2 p-10 flex flex-col gap-6 items-center">
+            <div className="flex content-center gap-10 items-center">
+                <Board onPlayerInRoundChange={onPlayerInRoundChange} onPlayerWinning={onPlayerWinning} game={game}/>
+                <div className="flex flex-col gap-3">
+                    <h1 className="text-4xl">Jogo da velha</h1>
+                    <h3 className="mt-2 text-xl">Jogador atual: {currentPlayer}</h3>
+                    <ScoreBoard players={game.players}/>
+                </div>
+            </div>
+            <p className="text-gray-500">Por Isaque Dantas, com&nbsp;
+                <a className="text-blue-500 underline" href="https://react.dev">React</a></p>
         </div>
-    </div>)
+    </>)
 }
 
 export default App;
